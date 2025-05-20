@@ -1,0 +1,18 @@
+meta {
+  name: get dogs
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/v1/examples/dogs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "breed": "husky",
+    "name": "balto"
+  }
+}

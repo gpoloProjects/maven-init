@@ -1,0 +1,7 @@
+spring:
+  profiles:
+    active: local
+
+  # Common settings for all profiles
+  jpa:
+    show-sql: true

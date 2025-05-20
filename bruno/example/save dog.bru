@@ -1,0 +1,18 @@
+meta {
+  name: save dog
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/v1/examples/dogs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "breed": "husky",
+    "name": "balto"
+  }
+}
