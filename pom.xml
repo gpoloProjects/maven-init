@@ -157,6 +157,36 @@
 					</includes>
 				</configuration>
 			</plugin>
+
+			<!-- Execute Bruno script during test phase -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>run-bruno-tests</id>
+						<phase>test</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>bash</executable>
+							<arguments>
+								<argument>runBruno.sh</argument>
+								<!-- Add script arguments here -->
+								<argument>${bruno.arg1}</argument>
+								<argument>${bruno.arg2}</argument>
+							</arguments>
+							<environmentVariables>
+								<BRUNO_ENV>${bruno.env}</BRUNO_ENV>
+								<TEST_URL>${test.url}</TEST_URL>
+							</environmentVariables>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
