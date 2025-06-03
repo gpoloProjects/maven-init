@@ -12,14 +12,14 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import org.hamcrest.Matchers;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -37,6 +37,9 @@ public class DogApiStepDefinitions {
 
     @Autowired
     private DogRepository dogRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private RequestSpecification request;
     private Response response;
@@ -62,28 +65,34 @@ public class DogApiStepDefinitions {
 
     @Given("a dog exists with ID {long}")
     public void aDogExistsWithId(Long id) {
-        // First delete any existing dog with this ID to avoid conflicts
+        // Using a more direct approach with EntityManager and native SQL
         try {
-            dogRepository.deleteById(id);
-            dogRepository.flush();
+            // First, delete any existing dog with this ID using direct SQL
+            Query deleteQuery = entityManager.createNativeQuery("DELETE FROM dog WHERE id = :id");
+            deleteQuery.setParameter("id", id);
+            deleteQuery.executeUpdate();
+
+            // Then insert a new dog with the specific ID using direct SQL
+            Query insertQuery = entityManager.createNativeQuery(
+                "INSERT INTO dog (id, name, breed) VALUES (:id, :name, :breed)");
+            insertQuery.setParameter("id", id);
+            insertQuery.setParameter("name", "Test Dog");
+            insertQuery.setParameter("breed", "Test Breed");
+            insertQuery.executeUpdate();
+
+            entityManager.flush();
+
+            // Verify the dog exists in the database
+            Query verifyQuery = entityManager.createNativeQuery(
+                "SELECT COUNT(*) FROM dog WHERE id = :id");
+            verifyQuery.setParameter("id", id);
+            Long count = ((Number) verifyQuery.getSingleResult()).longValue();
+
+            if (count == 0) {
+                throw new RuntimeException("Failed to create test dog with ID: " + id);
+            }
         } catch (Exception e) {
-            // Ignore if the entity doesn't exist
-        }
-
-        // Create a new dog with the specific ID
-        Dog dog = new Dog();
-        dog.setId(id);
-        dog.setName("Test Dog");
-        dog.setBreed("Test Breed");
-
-        // Save the dog using JPA repository save method
-        Dog savedDog = dogRepository.save(dog);
-        dogRepository.flush();
-
-        // Verify the dog was saved with the correct ID
-        Optional<Dog> retrievedDog = dogRepository.findById(id);
-        if (retrievedDog.isEmpty()) {
-            throw new RuntimeException("Failed to create test dog with ID: " + id);
+            throw new RuntimeException("Error setting up test dog with ID " + id, e);
         }
     }
 
