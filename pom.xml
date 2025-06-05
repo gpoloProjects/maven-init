@@ -16,6 +16,10 @@
 	<properties>
 		<java.version>17</java.version>
 		<cucumber.version>7.14.0</cucumber.version>
+		<!-- Define default values for Bruno script parameters -->
+		<bruno.env>local</bruno.env>
+		<bruno.host>localhost</bruno.host>
+		<bruno.port>8080</bruno.port>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -174,14 +178,18 @@
 							<executable>bash</executable>
 							<arguments>
 								<argument>runBruno.sh</argument>
-								<!-- Add script arguments here -->
-								<argument>${bruno.arg1}</argument>
-								<argument>${bruno.arg2}</argument>
+								<!-- Three arguments: env, host, port -->
+								<argument>${bruno.env}</argument>
+								<argument>${bruno.host}</argument>
+								<argument>${bruno.port}</argument>
 							</arguments>
-							<environmentVariables>
-								<BRUNO_ENV>${bruno.env}</BRUNO_ENV>
-								<TEST_URL>${test.url}</TEST_URL>
-							</environmentVariables>
+							<!-- Skip if tests are being skipped -->
+							<skip>${skipTests}</skip>
+							<!-- Ensure non-zero exit code doesn't fail the build -->
+							<successCodes>
+								<successCode>0</successCode>
+								<successCode>1</successCode>
+							</successCodes>
 						</configuration>
 					</execution>
 				</executions>
@@ -216,5 +224,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

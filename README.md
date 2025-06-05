@@ -41,7 +41,7 @@ This project includes integration with Bruno API testing through a shell script.
 To run only the Bruno shell script without executing other tests:
 
 ```bash
-mvn exec:exec@run-bruno-tests -Dbruno.arg1=arg1Value -Dbruno.env=dev -Dtest.url=http://localhost:8080
+mvn exec:exec@run-bruno-tests -Dbruno.env=local -Dbruno.host=localHost -Dtest.port=8080
 ```
 
 This command will:
