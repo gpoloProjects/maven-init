@@ -7,7 +7,7 @@ import lombok.Data;
 @Schema(description = "Dog response")
 public class DogResponseDto {
     @Schema(description = "Unique identifier")
-    private Long id;
+    private String id;
 
     @Schema(example = "Golden Retriever")
     private String breed;

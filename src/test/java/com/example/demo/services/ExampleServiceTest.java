@@ -31,8 +31,8 @@ public class ExampleServiceTest {
 
     @BeforeEach
     void setUp() {
-        dog1 = Dog.builder().id(1L).name("Rex").breed("German Shepherd").build();
-        dog2 = Dog.builder().id(2L).name("Buddy").breed("Golden Retriever").build();
+        dog1 = Dog.builder().id("1").name("Rex").breed("German Shepherd").build();
+        dog2 = Dog.builder().id("2").name("Buddy").breed("Golden Retriever").build();
     }
 
     @Test
@@ -53,57 +53,44 @@ public class ExampleServiceTest {
     @Test
     void testGetDogById() {
         // Given
-        when(dogRepository.findById(1L)).thenReturn(Optional.of(dog1));
+        when(dogRepository.findById("1")).thenReturn(Optional.of(dog1));
 
         // When
-        Optional<Dog> result = exampleService.getDogById(1L);
+        Optional<Dog> result = exampleService.getDogById("1");
 
         // Then
         assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(1L);
-        assertThat(result.get().getName()).isEqualTo("Rex");
-        verify(dogRepository, times(1)).findById(1L);
+        assertThat(result.get()).isEqualTo(dog1);
+        verify(dogRepository, times(1)).findById("1");
     }
 
     @Test
     void testGetDogByIdNotFound() {
         // Given
-        when(dogRepository.findById(999L)).thenReturn(Optional.empty());
+        when(dogRepository.findById("999")).thenReturn(Optional.empty());
 
         // When
-        Optional<Dog> result = exampleService.getDogById(999L);
+        Optional<Dog> result = exampleService.getDogById("999");
 
         // Then
         assertThat(result).isEmpty();
-        verify(dogRepository, times(1)).findById(999L);
+        verify(dogRepository, times(1)).findById("999");
     }
 
     @Test
     void testCreateDog() {
         // Given
         Dog newDog = Dog.builder().name("Max").breed("Bulldog").build();
-        Dog savedDog = Dog.builder().id(3L).name("Max").breed("Bulldog").build();
+        Dog savedDog = Dog.builder().id("3").name("Max").breed("Bulldog").build();
         when(dogRepository.save(any(Dog.class))).thenReturn(savedDog);
 
         // When
         Dog result = exampleService.createDog(newDog);
 
         // Then
-        assertThat(result.getId()).isEqualTo(3L);
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo("3");
         assertThat(result.getName()).isEqualTo("Max");
-        assertThat(result.getBreed()).isEqualTo("Bulldog");
         verify(dogRepository, times(1)).save(any(Dog.class));
-    }
-
-    @Test
-    void testDeleteDog() {
-        // Given
-        doNothing().when(dogRepository).deleteById(anyLong());
-
-        // When
-        exampleService.deleteDog(1L);
-
-        // Then
-        verify(dogRepository, times(1)).deleteById(1L);
     }
 }

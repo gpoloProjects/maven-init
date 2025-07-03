@@ -1,15 +1,16 @@
 package com.example.demo.models;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document(collection = "dogs")
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,9 +18,8 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Dog entity")
 public class Dog {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Unique identifier")
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Breed is required")
     @Size(min = 2, max = 50, message = "Breed must be between 2 and 50 characters")

@@ -21,7 +21,7 @@ public class ExampleService {
         return dogRepository.findAll();
     }
 
-    public Optional<Dog> getDogById(Long id) {
+    public Optional<Dog> getDogById(String id) {
         log.info("Fetching dog with ID: {}", id);
         return dogRepository.findById(id);
     }
@@ -31,7 +31,7 @@ public class ExampleService {
         return dogRepository.save(dog);
     }
 
-    public void deleteDog(Long id) {
+    public void deleteDog(String id) {
         log.info("Deleting dog with ID: {}", id);
         dogRepository.deleteById(id);
     }

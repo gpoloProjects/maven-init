@@ -42,7 +42,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "200", description = "Dog found"),
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
-    public DogResponseDto getDogById(@Parameter(description = "Dog ID") @PathVariable Long id) {
+    public DogResponseDto getDogById(@Parameter(description = "Dog ID") @PathVariable String id) {
         Dog dog = exampleService.getDogById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Dog not found with id: " + id));
@@ -69,7 +69,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "200", description = "Dog updated"),
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
-    public DogResponseDto updateDog(@PathVariable Long id, @Valid @RequestBody DogRequestDto request) {
+    public DogResponseDto updateDog(@PathVariable String id, @Valid @RequestBody DogRequestDto request) {
         Dog existingDog = exampleService.getDogById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Dog not found with id: " + id));
@@ -88,7 +88,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "204", description = "Dog deleted"),
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
-    public void deleteDog(@PathVariable Long id) {
+    public void deleteDog(@PathVariable String id) {
         if (!exampleService.getDogById(id).isPresent()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Dog not found with id: " + id);

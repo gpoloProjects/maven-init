@@ -37,164 +37,165 @@ public class ExampleControllerTest {
     @Test
     public void getAllDogs_ShouldReturnDogs() throws Exception {
         // Arrange
-        Dog dog1 = new Dog(1L, "Labrador", "Max");
-        Dog dog2 = new Dog(2L, "Beagle", "Charlie");
+        Dog dog1 = new Dog("1", "Labrador", "Max");
+        Dog dog2 = new Dog("2", "Beagle", "Charlie");
         List<Dog> dogs = Arrays.asList(dog1, dog2);
 
         DogResponseDto dto1 = new DogResponseDto();
-        dto1.setId(1L);
+        dto1.setId("1");
         dto1.setBreed("Labrador");
         dto1.setName("Max");
 
         DogResponseDto dto2 = new DogResponseDto();
-        dto2.setId(2L);
+        dto2.setId("2");
         dto2.setBreed("Beagle");
         dto2.setName("Charlie");
-        List<DogResponseDto> dtos = Arrays.asList(dto1, dto2);
+
+        List<DogResponseDto> dogDtos = Arrays.asList(dto1, dto2);
 
         when(exampleService.getAllDogs()).thenReturn(dogs);
-        when(dogMapper.toDogResponseDtoList(dogs)).thenReturn(dtos);
+        when(dogMapper.toDogResponseDtoList(dogs)).thenReturn(dogDtos);
 
         // Act & Assert
-        mockMvc.perform(get("/v1/examples/dogs")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/v1/examples/dogs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].breed").value("Labrador"))
-                .andExpect(jsonPath("$[1].id").value(2));
+                .andExpect(content().json(objectMapper.writeValueAsString(dogDtos)));
+
+        verify(exampleService, times(1)).getAllDogs();
     }
 
     @Test
-    public void getDogById_WhenDogExists_ShouldReturnDog() throws Exception {
+    public void getDogById_ShouldReturnDog() throws Exception {
         // Arrange
-        Long id = 1L;
-        Dog dog = new Dog(id, "Labrador", "Max");
+        Dog dog = new Dog("1", "Labrador", "Max");
         DogResponseDto dto = new DogResponseDto();
-        dto.setId(id);
+        dto.setId("1");
         dto.setBreed("Labrador");
         dto.setName("Max");
 
-        when(exampleService.getDogById(id)).thenReturn(Optional.of(dog));
+        when(exampleService.getDogById("1")).thenReturn(Optional.of(dog));
         when(dogMapper.toDogResponseDto(dog)).thenReturn(dto);
 
         // Act & Assert
-        mockMvc.perform(get("/v1/examples/dogs/{id}", id))
+        mockMvc.perform(get("/v1/examples/dogs/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.breed").value("Labrador"))
-                .andExpect(jsonPath("$.name").value("Max"));
+                .andExpect(content().json(objectMapper.writeValueAsString(dto)));
+
+        verify(exampleService, times(1)).getDogById("1");
     }
 
     @Test
-    public void getDogById_WhenDogNotExists_ShouldReturn404() throws Exception {
+    public void getDogById_NotFound_ShouldReturn404() throws Exception {
         // Arrange
-        Long id = 1L;
-        when(exampleService.getDogById(id)).thenReturn(Optional.empty());
+        when(exampleService.getDogById("999")).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get("/v1/examples/dogs/{id}", id))
+        mockMvc.perform(get("/v1/examples/dogs/999"))
                 .andExpect(status().isNotFound());
+
+        verify(exampleService, times(1)).getDogById("999");
     }
 
     @Test
-    public void createDog_WithValidData_ShouldReturnNewDog() throws Exception {
+    public void createDog_ShouldReturnCreatedDog() throws Exception {
         // Arrange
         DogRequestDto requestDto = new DogRequestDto();
-        requestDto.setBreed("Labrador");
-        requestDto.setName("Max");
+        requestDto.setBreed("Bulldog");
+        requestDto.setName("Rocky");
 
-        Dog dog = new Dog();
-        dog.setBreed("Labrador");
-        dog.setName("Max");
-
-        Dog savedDog = new Dog();
-        savedDog.setId(1L);
-        savedDog.setBreed("Labrador");
-        savedDog.setName("Max");
-
+        Dog unsavedDog = new Dog(null, "Bulldog", "Rocky");
+        Dog savedDog = new Dog("3", "Bulldog", "Rocky");
         DogResponseDto responseDto = new DogResponseDto();
-        responseDto.setId(1L);
-        responseDto.setBreed("Labrador");
-        responseDto.setName("Max");
+        responseDto.setId("3");
+        responseDto.setBreed("Bulldog");
+        responseDto.setName("Rocky");
 
-        when(dogMapper.toDogEntity(any(DogRequestDto.class))).thenReturn(dog);
-        when(exampleService.createDog(any(Dog.class))).thenReturn(savedDog);
-        when(dogMapper.toDogResponseDto(any(Dog.class))).thenReturn(responseDto);
+        when(dogMapper.toDogEntity(requestDto)).thenReturn(unsavedDog);
+        when(exampleService.createDog(unsavedDog)).thenReturn(savedDog);
+        when(dogMapper.toDogResponseDto(savedDog)).thenReturn(responseDto);
 
         // Act & Assert
         mockMvc.perform(post("/v1/examples/dogs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.breed").value("Labrador"))
-                .andExpect(jsonPath("$.name").value("Max"));
+                .andExpect(content().json(objectMapper.writeValueAsString(responseDto)));
+
+        verify(exampleService, times(1)).createDog(any(Dog.class));
     }
 
     @Test
-    public void updateDog_WithValidData_ShouldReturnUpdatedDog() throws Exception {
+    public void updateDog_ShouldReturnUpdatedDog() throws Exception {
         // Arrange
-        Long id = 1L;
         DogRequestDto requestDto = new DogRequestDto();
-        requestDto.setBreed("Labrador");
-        requestDto.setName("Updated Max");
+        requestDto.setBreed("Updated Breed");
+        requestDto.setName("Updated Name");
 
-        Dog existingDog = new Dog();
-        existingDog.setId(id);
-        existingDog.setBreed("Labrador");
-        existingDog.setName("Max");
-
-        Dog updatedDog = new Dog();
-        updatedDog.setId(id);
-        updatedDog.setBreed("Labrador");
-        updatedDog.setName("Updated Max");
-
+        Dog existingDog = new Dog("1", "Labrador", "Max");
+        Dog updatedDog = new Dog("1", "Updated Breed", "Updated Name");
         DogResponseDto responseDto = new DogResponseDto();
-        responseDto.setId(id);
-        responseDto.setBreed("Labrador");
-        responseDto.setName("Updated Max");
+        responseDto.setId("1");
+        responseDto.setBreed("Updated Breed");
+        responseDto.setName("Updated Name");
 
-        when(exampleService.getDogById(id)).thenReturn(Optional.of(existingDog));
+        when(exampleService.getDogById("1")).thenReturn(Optional.of(existingDog));
         when(exampleService.createDog(any(Dog.class))).thenReturn(updatedDog);
         when(dogMapper.toDogResponseDto(updatedDog)).thenReturn(responseDto);
 
         // Act & Assert
-        mockMvc.perform(put("/v1/examples/dogs/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+        mockMvc.perform(put("/v1/examples/dogs/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value("Updated Max"));
+                .andExpect(content().json(objectMapper.writeValueAsString(responseDto)));
 
-        verify(dogMapper).updateDogEntity(any(Dog.class), any(DogRequestDto.class));
+        verify(exampleService, times(1)).getDogById("1");
+        verify(dogMapper, times(1)).updateDogEntity(any(Dog.class), any(DogRequestDto.class));
     }
 
     @Test
-    public void deleteDog_WhenDogExists_ShouldReturnNoContent() throws Exception {
+    public void updateDog_NotFound_ShouldReturn404() throws Exception {
         // Arrange
-        Long id = 1L;
-        Dog existingDog = new Dog(id, "Labrador", "Max");
+        DogRequestDto requestDto = new DogRequestDto();
+        requestDto.setBreed("Updated Breed");
+        requestDto.setName("Updated Name");
 
-        when(exampleService.getDogById(id)).thenReturn(Optional.of(existingDog));
-        doNothing().when(exampleService).deleteDog(id);
+        when(exampleService.getDogById("999")).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(delete("/v1/examples/dogs/{id}", id))
-                .andExpect(status().isNoContent());
-
-        verify(exampleService).deleteDog(id);
-    }
-
-    @Test
-    public void deleteDog_WhenDogNotExists_ShouldReturn404() throws Exception {
-        // Arrange
-        Long id = 1L;
-        when(exampleService.getDogById(id)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        mockMvc.perform(delete("/v1/examples/dogs/{id}", id))
+        mockMvc.perform(put("/v1/examples/dogs/999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
 
-        verify(exampleService, never()).deleteDog(id);
+        verify(exampleService, times(1)).getDogById("999");
+        verify(exampleService, never()).createDog(any(Dog.class));
+    }
+
+    @Test
+    public void deleteDog_ShouldReturnNoContent() throws Exception {
+        // Arrange
+        Dog dog = new Dog("1", "Labrador", "Max");
+        when(exampleService.getDogById("1")).thenReturn(Optional.of(dog));
+
+        // Act & Assert
+        mockMvc.perform(delete("/v1/examples/dogs/1"))
+                .andExpect(status().isNoContent());
+
+        verify(exampleService, times(1)).getDogById("1");
+        verify(exampleService, times(1)).deleteDog("1");
+    }
+
+    @Test
+    public void deleteDog_NotFound_ShouldReturn404() throws Exception {
+        // Arrange
+        when(exampleService.getDogById("999")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        mockMvc.perform(delete("/v1/examples/dogs/999"))
+                .andExpect(status().isNotFound());
+
+        verify(exampleService, times(1)).getDogById("999");
+        verify(exampleService, never()).deleteDog(anyString());
     }
 }
