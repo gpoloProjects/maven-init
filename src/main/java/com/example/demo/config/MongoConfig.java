@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.io.File;
@@ -15,7 +14,7 @@ import java.io.IOException;
 
 @Configuration
 @Profile("prod")
-public class MongoConfig extends AbstractMongoClientConfiguration {
+public class MongoConfig {
 
     @Value("${MONGO_ENDPOINT}")
     private String mongoEndpoint;
@@ -23,14 +22,10 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Value("${MONGO_WRITE_CREDS:/mnt/mongo/write-creds.json}")
     private String credentialsFilePath;
 
-    @Override
-    protected String getDatabaseName() {
-        // The database name will be taken from the connection string
-        return "admin";
-    }
+    @Value("${MONGO_DATABASE:mydb}")
+    private String mongoDatabase;
 
     @Bean
-    @Override
     public MongoClient mongoClient() {
         try {
             // Load credentials from JSON file
@@ -50,7 +45,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        return new MongoTemplate(mongoClient(), getDatabaseName());
+        return new MongoTemplate(mongoClient(), mongoDatabase);
     }
 
     private MongoCredentials loadMongoCredentials() throws IOException {
