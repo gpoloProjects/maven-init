@@ -111,6 +111,14 @@
 			<artifactId>rest-assured</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -162,39 +170,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Execute Bruno script during test phase -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>run-bruno-tests</id>
-						<phase>test</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>bash</executable>
-							<arguments>
-								<argument>runBruno.sh</argument>
-								<!-- Three arguments: env, host, port -->
-								<argument>${bruno.env}</argument>
-								<argument>${bruno.host}</argument>
-								<argument>${bruno.port}</argument>
-							</arguments>
-							<!-- Skip if tests are being skipped -->
-							<skip>${skipTests}</skip>
-							<!-- Ensure non-zero exit code doesn't fail the build -->
-							<successCodes>
-								<successCode>0</successCode>
-								<successCode>1</successCode>
-							</successCodes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -224,4 +199,89 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<!-- Define profiles -->
+	<profiles>
+		<profile>
+			<id>intTest</id>
+				<!-- Explicit activation - never activate by default -->
+				<activation>
+					<activeByDefault>false</activeByDefault>
+				</activation>
+			<!-- Profile-specific properties -->
+			<properties>
+				<bruno.env>local</bruno.env>
+				<bruno.host>localhost</bruno.host>
+				<bruno.port>8080</bruno.port>
+			</properties>
+			<build>
+				<plugins>
+					<!-- Execute Bruno script during test phase -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>run-bruno-tests</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<arguments>
+										<argument>runBruno.sh</argument>
+										<!-- Three arguments: env, host, port -->
+										<argument>${bruno.env}</argument>
+										<argument>${bruno.host}</argument>
+										<argument>${bruno.port}</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- Development environment profile -->
+		<profile>
+			<id>dev</id>
+			<properties>
+				<bruno.env>dev</bruno.env>
+				<bruno.host>api-dev.example.com</bruno.host>
+				<bruno.port>8443</bruno.port>
+			</properties>
+		</profile>
+
+		<!-- Testing/QA environment profile -->
+		<profile>
+			<id>qa</id>
+			<properties>
+				<bruno.env>qa</bruno.env>
+				<bruno.host>api-qa.example.com</bruno.host>
+				<bruno.port>8443</bruno.port>
+			</properties>
+		</profile>
+
+		<!-- Staging environment profile -->
+		<profile>
+			<id>staging</id>
+			<properties>
+				<bruno.env>staging</bruno.env>
+				<bruno.host>api-staging.example.com</bruno.host>
+				<bruno.port>443</bruno.port>
+			</properties>
+		</profile>
+
+		<!-- Production environment profile -->
+		<profile>
+			<id>prod</id>
+			<properties>
+				<bruno.env>prod</bruno.env>
+				<bruno.host>api.example.com</bruno.host>
+				<bruno.port>443</bruno.port>
+			</properties>
+		</profile>
+	</profiles>
 </project>

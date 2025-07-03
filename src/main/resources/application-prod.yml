@@ -11,3 +11,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
+  data:
+    mongodb:
+      uri: ${MONGO_ENDPOINT}
+      auto-index-creation: true
+      # We'll set authentication details through MongoClientSettings in a config class
