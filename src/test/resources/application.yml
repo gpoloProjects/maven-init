@@ -1,7 +1,11 @@
 spring:
-  profiles:
-    active: local
-
-  # Common settings for all profiles
-  jpa:
-    show-sql: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: testdb
+      auto-index-creation: true
+  mongodb:
+    embedded:
+      version: 6.0.11
+      enabled: true
