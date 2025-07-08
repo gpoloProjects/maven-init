@@ -11,3 +11,7 @@ spring:
   mongodb:
     embedded:
       version: 6.0.11
+      enabled: true
+
+# Enable embedded MongoDB for local development
+de.flapdoodle.mongodb.embedded.version: 6.0.11
