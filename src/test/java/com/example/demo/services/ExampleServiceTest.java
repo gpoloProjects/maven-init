@@ -95,4 +95,28 @@ public class ExampleServiceTest {
         assertThat(result.getBreed()).isEqualTo("Bulldog");
         verify(dogRepository, times(1)).save(any(Dog.class));
     }
+
+    @Test
+    void testDeleteDog() {
+        // Given
+        String dogId = "1";
+
+        // When
+        exampleService.deleteDog(dogId);
+
+        // Then
+        verify(dogRepository, times(1)).deleteById(dogId);
+    }
+
+    @Test
+    void testDeleteDogNotFound() {
+        // Given
+        String nonExistentId = "999";
+
+        // When
+        exampleService.deleteDog(nonExistentId);
+
+        // Then
+        verify(dogRepository, times(1)).deleteById(nonExistentId);
+    }
 }
