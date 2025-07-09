@@ -1,11 +1,13 @@
 spring:
   data:
     mongodb:
-      host: localhost
-      port: 27017
+      # Remove fixed host/port to let embedded MongoDB choose
       database: testdb
       auto-index-creation: true
   mongodb:
     embedded:
       version: 6.0.11
       enabled: true
+      # Let flapdoodle choose a random available port
+      features:
+        - SYNC_DELAY
