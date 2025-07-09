@@ -123,6 +123,9 @@
 						<include>**/*Tests.java</include>
 						<include>**/*TestRunner.java</include>
 					</includes>
+					<excludes>
+						<exclude>**/*IntegrationTest.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 
