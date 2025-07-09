@@ -1,20 +1,19 @@
 package com.example.demo.models;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DogMapper {
-    @Mapping(target = "id", ignore = true)
-    Dog toDogEntity(DogRequestDto request);
 
-    DogResponseDto toDogResponseDto(Dog entity);
+    DogResponseDto toDogResponseDto(Dog dog);
 
-    @Mapping(target = "id", ignore = true)
-    List<DogResponseDto> toDogResponseDtoList(List<Dog> entities);
+    List<DogResponseDto> toDogResponseDtoList(List<Dog> dogs);
 
-    void updateDogEntity(@MappingTarget Dog target, DogRequestDto source);
+    Dog toDogEntity(DogRequestDto dogRequestDto);
+
+    void updateDogEntity(@MappingTarget Dog dog, DogRequestDto dogRequestDto);
 }

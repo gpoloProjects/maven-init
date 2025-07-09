@@ -1,17 +1,17 @@
 package com.example.demo.models;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Schema(description = "Dog response")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DogResponseDto {
-    @Schema(description = "Unique identifier")
+
     private String id;
-
-    @Schema(example = "Golden Retriever")
-    private String breed;
-
-    @Schema(example = "Buddy")
     private String name;
+    private String breed;
 }

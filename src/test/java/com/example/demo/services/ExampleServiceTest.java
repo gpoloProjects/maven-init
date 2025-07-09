@@ -1,6 +1,9 @@
 package com.example.demo.services;
 
 import com.example.demo.models.Dog;
+import com.example.demo.models.DogMapper;
+import com.example.demo.models.DogRequestDto;
+import com.example.demo.models.DogResponseDto;
 import com.example.demo.repositories.DogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,9 @@ public class ExampleServiceTest {
 
     @Mock
     private DogRepository dogRepository;
+
+    @Mock
+    private DogMapper dogMapper;
 
     @InjectMocks
     private ExampleService exampleService;
@@ -118,5 +124,72 @@ public class ExampleServiceTest {
 
         // Then
         verify(dogRepository, times(1)).deleteById(nonExistentId);
+    }
+
+    // New tests for DTO-based service methods
+    @Test
+    void testGetAllDogsAsDto() {
+        // Given
+        List<Dog> dogs = Arrays.asList(dog1, dog2);
+        when(dogRepository.findAll()).thenReturn(dogs);
+        when(dogMapper.toDogResponseDtoList(dogs)).thenReturn(Arrays.asList(
+                DogResponseDto.builder().id("1").name("Rex").breed("German Shepherd").build(),
+                DogResponseDto.builder().id("2").name("Buddy").breed("Golden Retriever").build()
+        ));
+
+        // When
+        List<DogResponseDto> result = exampleService.getAllDogsAsDto();
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Rex");
+        assertThat(result.get(1).getName()).isEqualTo("Buddy");
+        verify(dogRepository, times(1)).findAll();
+        verify(dogMapper, times(1)).toDogResponseDtoList(dogs);
+    }
+
+    @Test
+    void testGetDogByIdAsDto() {
+        // Given
+        when(dogRepository.findById("1")).thenReturn(Optional.of(dog1));
+        DogResponseDto expectedDto = DogResponseDto.builder()
+                .id("1").name("Rex").breed("German Shepherd").build();
+        when(dogMapper.toDogResponseDto(dog1)).thenReturn(expectedDto);
+
+        // When
+        DogResponseDto result = exampleService.getDogByIdAsDto("1");
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo("1");
+        assertThat(result.getName()).isEqualTo("Rex");
+        verify(dogRepository, times(1)).findById("1");
+        verify(dogMapper, times(1)).toDogResponseDto(dog1);
+    }
+
+    @Test
+    void testCreateDogFromDto() {
+        // Given
+        DogRequestDto requestDto = DogRequestDto.builder()
+                .name("Max").breed("Bulldog").build();
+        Dog newDog = Dog.builder().name("Max").breed("Bulldog").build();
+        Dog savedDog = Dog.builder().id("3").name("Max").breed("Bulldog").build();
+        DogResponseDto expectedDto = DogResponseDto.builder()
+                .id("3").name("Max").breed("Bulldog").build();
+
+        when(dogMapper.toDogEntity(requestDto)).thenReturn(newDog);
+        when(dogRepository.save(newDog)).thenReturn(savedDog);
+        when(dogMapper.toDogResponseDto(savedDog)).thenReturn(expectedDto);
+
+        // When
+        DogResponseDto result = exampleService.createDogFromDto(requestDto);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo("3");
+        assertThat(result.getName()).isEqualTo("Max");
+        verify(dogMapper, times(1)).toDogEntity(requestDto);
+        verify(dogRepository, times(1)).save(newDog);
+        verify(dogMapper, times(1)).toDogResponseDto(savedDog);
     }
 }

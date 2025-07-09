@@ -1,7 +1,5 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.Dog;
-import com.example.demo.models.DogMapper;
 import com.example.demo.models.DogRequestDto;
 import com.example.demo.models.DogResponseDto;
 import com.example.demo.services.ExampleService;
@@ -14,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,14 +22,12 @@ import java.util.List;
 public class ExampleController {
 
     private final ExampleService exampleService;
-    private final DogMapper dogMapper;
 
     @GetMapping("/dogs")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all dogs", description = "Retrieves a list of all dogs")
     public List<DogResponseDto> getAllDogs() {
-        List<Dog> dogs = exampleService.getAllDogs();
-        return dogMapper.toDogResponseDtoList(dogs);
+        return exampleService.getAllDogsAsDto();
     }
 
     @GetMapping("/dogs/{id}")
@@ -43,10 +38,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
     public DogResponseDto getDogById(@Parameter(description = "Dog ID") @PathVariable String id) {
-        Dog dog = exampleService.getDogById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Dog not found with id: " + id));
-        return dogMapper.toDogResponseDto(dog);
+        return exampleService.getDogByIdAsDto(id);
     }
 
     @PostMapping("/dogs")
@@ -57,9 +49,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     public DogResponseDto createDog(@Valid @RequestBody DogRequestDto request) {
-        Dog dogEntity = dogMapper.toDogEntity(request);
-        Dog savedDog = exampleService.createDog(dogEntity);
-        return dogMapper.toDogResponseDto(savedDog);
+        return exampleService.createDogFromDto(request);
     }
 
     @PutMapping("/dogs/{id}")
@@ -70,15 +60,7 @@ public class ExampleController {
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
     public DogResponseDto updateDog(@PathVariable String id, @Valid @RequestBody DogRequestDto request) {
-        Dog existingDog = exampleService.getDogById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Dog not found with id: " + id));
-
-        dogMapper.updateDogEntity(existingDog, request);
-        existingDog.setId(id); // Ensure the ID is set
-        Dog updatedDog = exampleService.createDog(existingDog);
-
-        return dogMapper.toDogResponseDto(updatedDog);
+        return exampleService.updateDogFromDto(id, request);
     }
 
     @DeleteMapping("/dogs/{id}")
@@ -89,10 +71,6 @@ public class ExampleController {
             @ApiResponse(responseCode = "404", description = "Dog not found")
     })
     public void deleteDog(@PathVariable String id) {
-        if (!exampleService.getDogById(id).isPresent()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Dog not found with id: " + id);
-        }
-        exampleService.deleteDog(id);
+        exampleService.deleteDogById(id);
     }
 }
