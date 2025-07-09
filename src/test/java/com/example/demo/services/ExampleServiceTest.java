@@ -4,24 +4,26 @@ import com.example.demo.models.Dog;
 import com.example.demo.repositories.DogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@DataMongoTest
-@Import(ExampleService.class)
+@ExtendWith(MockitoExtension.class)
 public class ExampleServiceTest {
 
-    @Autowired
+    @Mock
     private DogRepository dogRepository;
 
-    @Autowired
+    @InjectMocks
     private ExampleService exampleService;
 
     private Dog dog1;
@@ -29,68 +31,68 @@ public class ExampleServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Clear existing data
-        dogRepository.deleteAll();
-
-        // Create and save dog1 to the database
-        Dog newDog1 = Dog.builder().name("Rex").breed("German Shepherd").build();
-        dog1 = dogRepository.save(newDog1);
-
-        // Create and save dog2 to the database too
-        Dog newDog2 = Dog.builder().name("Buddy").breed("Golden Retriever").build();
-        dog2 = dogRepository.save(newDog2);
+        // Create test objects in memory (no database required)
+        dog1 = Dog.builder().id("1").name("Rex").breed("German Shepherd").build();
+        dog2 = Dog.builder().id("2").name("Buddy").breed("Golden Retriever").build();
     }
 
     @Test
     void testGetAllDogs() {
+        // Given
+        List<Dog> dogs = Arrays.asList(dog1, dog2);
+        when(dogRepository.findAll()).thenReturn(dogs);
+
         // When
         List<Dog> result = exampleService.getAllDogs();
 
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result).usingRecursiveFieldByFieldElementComparator()
-            .containsExactlyInAnyOrder(dog1, dog2);
+        assertThat(result).containsExactlyInAnyOrder(dog1, dog2);
+        verify(dogRepository, times(1)).findAll();
     }
 
     @Test
     void testGetDogById() {
+        // Given
+        when(dogRepository.findById("1")).thenReturn(Optional.of(dog1));
+
         // When
-        Optional<Dog> result = exampleService.getDogById(dog1.getId());
+        Optional<Dog> result = exampleService.getDogById("1");
 
         // Then
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(dog1);
+        verify(dogRepository, times(1)).findById("1");
     }
 
     @Test
     void testGetDogByIdNotFound() {
-        // Given a non-existent ID
-        String nonExistentId = "999";
+        // Given
+        when(dogRepository.findById("999")).thenReturn(Optional.empty());
 
         // When
-        Optional<Dog> result = exampleService.getDogById(nonExistentId);
+        Optional<Dog> result = exampleService.getDogById("999");
 
         // Then
         assertThat(result).isEmpty();
+        verify(dogRepository, times(1)).findById("999");
     }
 
     @Test
     void testCreateDog() {
         // Given
         Dog newDog = Dog.builder().name("Max").breed("Bulldog").build();
+        Dog savedDog = Dog.builder().id("3").name("Max").breed("Bulldog").build();
+        when(dogRepository.save(any(Dog.class))).thenReturn(savedDog);
 
         // When
         Dog result = exampleService.createDog(newDog);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isNotNull();
+        assertThat(result.getId()).isEqualTo("3");
         assertThat(result.getName()).isEqualTo("Max");
         assertThat(result.getBreed()).isEqualTo("Bulldog");
-
-        // Verify it was actually saved to the database
-        Optional<Dog> fromDb = dogRepository.findById(result.getId());
-        assertThat(fromDb).isPresent();
-        assertThat(fromDb.get().getName()).isEqualTo("Max");
+        verify(dogRepository, times(1)).save(any(Dog.class));
     }
 }
