@@ -1,3 +1,17 @@
 spring:
   profiles:
     active: local
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,loggers,metrics,refresh,shutdown
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  health:
+    show-components: always

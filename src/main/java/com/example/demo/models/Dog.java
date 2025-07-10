@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "dogs")
@@ -20,6 +21,10 @@ public class Dog {
     @Id
     @Schema(description = "Unique identifier")
     private String id;
+
+    @Version
+    @Schema(description = "Version for optimistic locking")
+    private Integer version;
 
     @NotBlank(message = "Breed is required")
     @Size(min = 2, max = 50, message = "Breed must be between 2 and 50 characters")
