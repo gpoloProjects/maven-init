@@ -4,8 +4,7 @@ spring:
       on-profile: local
   data:
     mongodb:
-      host: localhost
-      port: 27017
+      # Remove fixed host/port - let embedded MongoDB choose its own port
       database: localdb
       auto-index-creation: true
   mongodb:
