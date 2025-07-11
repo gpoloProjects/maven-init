@@ -22,7 +22,7 @@ public class MongoConfig {
     @Value("${MONGO_WRITE_CREDS:/mnt/mongo/write-creds.json}")
     private String credentialsFilePath;
 
-    @Value("${MONGO_DATABASE:mydb}")
+    @Value("${MONGO_DB_NAME:mydb}")
     private String mongoDatabase;
 
     @Bean
@@ -33,8 +33,11 @@ public class MongoConfig {
             String username = credentials.getUsername();
             String password = credentials.getPassword();
 
-            // Build connection string with authentication
-            String connectionString = "mongodb+srv://" + username + ":" + password + "@" + mongoEndpoint;
+            // Build connection string with authentication and database
+            // MongoDB Atlas format: mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+            String connectionString = "mongodb+srv://" + username + ":" + password + "@" + mongoEndpoint + "/" + mongoDatabase + "?retryWrites=true&w=majority";
+
+            System.out.println("MongoDB Connection String (credentials masked): mongodb+srv://***:***@" + mongoEndpoint + "/" + mongoDatabase + "?retryWrites=true&w=majority");
 
             // Create MongoDB client with connection string
             return MongoClients.create(connectionString);

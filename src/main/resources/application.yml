@@ -15,3 +15,14 @@ management:
       enabled: true
   health:
     show-components: always
+
+# Debug logging for troubleshooting
+logging:
+  level:
+    # Flapdoodle embedded MongoDB debugging
+    de.flapdoodle.embed: DEBUG
+    de.flapdoodle.embed.mongo: DEBUG
+    de.flapdoodle.embed.process: DEBUG
+    # Spring Data MongoDB debugging
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.data.mongodb.core: DEBUG

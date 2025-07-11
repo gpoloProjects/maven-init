@@ -31,6 +31,12 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
+		<!-- Spring Boot Actuator for monitoring and management -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
 		<!-- OpenAPI/Swagger Documentation -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
